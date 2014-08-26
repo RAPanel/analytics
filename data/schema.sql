@@ -30,11 +30,11 @@ CREATE TABLE `log_visit` (
   `location_ip` varbinary(16) NOT NULL,
   `total_time` smallint(6) unsigned NOT NULL,
   `total_actions` smallint(6) unsigned NOT NULL,
-  `os` char(3) NOT NULL,
-  `browser` varchar(10) NOT NULL,
-  `browser_version` varchar(20) NOT NULL,
+  `os` char(3) CHARACTER SET latin1 NOT NULL,
+  `browser` varchar(10) CHARACTER SET latin1 NOT NULL,
+  `browser_version` varchar(20) CHARACTER SET latin1 NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -69,7 +69,7 @@ CREATE TABLE `log_hit` (
   `action_id_event` int(10) unsigned DEFAULT NULL,
   `created` datetime NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -81,4 +81,4 @@ CREATE TABLE `log_hit` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2014-08-26  8:50:30
+-- Dump completed on 2014-08-26  8:51:40
