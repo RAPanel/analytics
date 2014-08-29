@@ -1,6 +1,7 @@
 <?php
 
 YiiBase::setPathOfAlias('analytics', dirname(dirname(__FILE__)));
+YiiBase::import('analytics.components.AnalyticsHelper');
 
 /**
  * Class AnalyticsCommand
@@ -13,7 +14,6 @@ class AnalyticsCommand extends RConsoleCommand
     {
         $startTime = time();
 
-        YiiBase::import('analytics.components.AnalyticsHelper');
 
         $db = Yii::app()->db;
         $db->createCommand()->delete('log_visit');

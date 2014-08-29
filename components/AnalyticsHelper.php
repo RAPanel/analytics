@@ -1,6 +1,5 @@
 <?php
 YiiBase::setPathOfAlias('analytics', dirname(dirname(__FILE__)));
-YiiBase::import('analytics.components.UserAgentParser');
 
 /**
  * Class AnalyticsHelper
