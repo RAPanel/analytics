@@ -23,6 +23,15 @@ class AnalyticsController extends RAdminController {
 		return dirname(dirname(__FILE__)) . '/views/analytics';
 	}
 
+	public function getLayoutFile($layoutName)
+	{
+		if ($layoutName == 'layout')
+			return dirname(dirname(__FILE__)) . '/views/analytics/layout.php';
+		else {
+			return parent::getLayoutFile($layoutName);
+		}
+	}
+
 	/**
 	 * @param string $range Диапазон дат
 	 * @param string $zoom Размер одного деления - month|day|hour|minute
@@ -43,7 +52,7 @@ class AnalyticsController extends RAdminController {
 		$dataSources = explode(',', $dataSources);
 		list($fromDate, $toDate, $zoom) = $this->normalizeDates($range, $zoom);
 		$graphData = $this->getData($dataSources, $fromDate, $toDate, $zoom);
-		$this->render($this->action->id, compact('graphData'));
+		$this->render($this->action->id, compact('graphData', 'dataSources', 'zoom'));
 	}
 
 	public function getData($dataSources, $fromDate, $toDate, $zoom) {

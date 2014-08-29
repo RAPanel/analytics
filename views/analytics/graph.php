@@ -1,3 +1,12 @@
+<div class="row date-range-picker">
+	<?=CHtml::beginForm(array('/' . $this->module->id . '/analytics/graph', 'dataSources' => implode(',', $dataSources), 'zoom' => $zoom), 'get'); ?>
+	<label for="dateRange">Выберите период: </label>
+	<?php $this->widget('ext.RDateRangePicker.RDateRangePicker', array(
+		'name' => 'range',
+		'value' => $_GET['range'],
+	)); ?>
+	<?=CHtml::endForm() ?>
+</div>
 <?php
 foreach($graphData as $graph) {
 	$type = $graph['series'][0]['type'];
