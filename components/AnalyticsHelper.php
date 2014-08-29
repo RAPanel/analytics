@@ -94,7 +94,7 @@ class AnalyticsHelper
             YiiBase::setPathOfAlias('DeviceDetector', YiiBase::getPathOfAlias('analytics.vendor.device-detector'));
         }
         $userAgentInfo = \DeviceDetector\DeviceDetector::getInfoFromUserAgent($userAgent);
-        if (isset($userAgentInfo['bot'])) {
+        if (isset($userAgentInfo['bot']) || (isset($userAgentInfo['os']['client']) && $userAgentInfo['client']['short_name'] == "UNK")) {
             return array(
                 'os' => 'Bot',
                 'browser' => '',

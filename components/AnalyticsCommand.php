@@ -53,4 +53,9 @@ class AnalyticsCommand extends RConsoleCommand
         }
     }
 
+	public function actionDecodeIp($id) {
+		$ipData = Yii::app()->db->createCommand()->select('location_ip')->from('log_visit')->where("id = :id")->queryScalar(array(':id' => $id));
+		$this->e(AnalyticsHelper::n2p($ipData));
+	}
+
 }
