@@ -11,10 +11,9 @@ class CounterController extends RController
 	{
 		if(!Yii::app()->request->isAjaxRequest)
 			throw new CHttpException(404);
-		$this->response(array('success' => true));
 		$data = Yii::app()->user->getState(md5('analytics:' . $id));
 		Yii::app()->user->setState(md5('analytics:' . $id), false);
-		AnalyticsHelper::incrementLog(array(
+		$result = AnalyticsHelper::incrementLog(array(
 			'url' => $data['url'],
 			'name' => $name,
 			'referrer' => $data['referrer'],
@@ -26,7 +25,8 @@ class CounterController extends RController
 			'ram' => $data['ram'] * 1000,
 			'created' => time(),
 		));
-	}
+        $this->response(array('success' => $result));
+    }
 
 	public function response($data)
 	{

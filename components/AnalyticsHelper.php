@@ -8,9 +8,10 @@ YiiBase::setPathOfAlias('analytics', dirname(dirname(__FILE__)));
 class AnalyticsHelper
 {
 
-	const TYPE_INTERNAL_URL = 1;
-	const TYPE_EXTERNAL_URL = 2;
-	const TYPE_ACTION_NAME = 3;
+    const TYPE_INTERNAL_URL = 1;
+    const TYPE_EXTERNAL_URL = 2;
+    const TYPE_ACTION_NAME = 3;
+
     /**
      * @return CDbConnection
      */
@@ -32,9 +33,13 @@ class AnalyticsHelper
     {
         // Проверяем, что кто-то посетил
         if (empty($data['session']))
-            return;
+            return false;
         if (!$sessionIdEncoded = self::getSessionCode($data['session']))
-            return;
+            return false;
+
+        // Проверяем, пишем ли это в статистику
+        if (!$actionId = self::getActionId($data['url'])) return false;
+
         // Ищем живой визит с таймоутом 30 минут
         $visitId = self::createCommand()->from('log_visit')
             ->select('id')
@@ -53,13 +58,13 @@ class AnalyticsHelper
         } else {
             $userAgentData = self::parseUserAgentData($data['userAgent']);
             if (self::isBot($userAgentData))
-                return;
+                return false;
 
             self::getDb()->autoCommit = true;
             self::createCommand()->insert('log_visit', CMap::mergeArray($userAgentData, array(
                     'visitor_id' => $sessionIdEncoded,
-                    'lastmod' => new CDbExpression('FROM_UNIXTIME(' . $data['created'] . ')'),
-                    'created' => new CDbExpression('FROM_UNIXTIME(' . $data['created'] . ')'),
+                    'lastmod' => new CDbExpression('FROM_UNIXTIME(:time)', array('time' => $data['created'])),
+                    'created' => new CDbExpression('FROM_UNIXTIME(:time)', array('time' => $data['created'])),
                     'location_ip' => self::p2n($data['ip']),
                     'total_time' => 0,
                     'total_actions' => 1,
@@ -71,16 +76,16 @@ class AnalyticsHelper
             self::getDb()->autoCommit = false;
         }
 
-        self::getDb()->createCommand()->insert('log_hit', array(
+        return self::getDb()->createCommand()->insert('log_hit', array(
             'visitor_id' => $sessionIdEncoded,
             'visit_id' => $visitId,
             'action_id_name' => self::getActionId($data['name'], self::TYPE_ACTION_NAME),
-            'action_id_url' => self::getActionId($data['url']),
+            'action_id_url' => $actionId,
             'action_id_event' => 0,
             'time_cpu' => $data['time_cpu'],
             'time_exec' => $data['time_exec'],
             'ram' => $data['ram'],
-            'created' => new CDbExpression('FROM_UNIXTIME(' . $data['created'] . ')'),
+            'created' => new CDbExpression('FROM_UNIXTIME(:time)', array('time' => $data['created'])),
         ));
     }
 
@@ -137,15 +142,15 @@ class AnalyticsHelper
 
     public static function getActionId($name, $type = self::TYPE_INTERNAL_URL)
     {
-	    $name = trim($name);
-	    if(!strlen($name))
-		    return 0;
-	    $isUrl = in_array($type, array(self::TYPE_INTERNAL_URL));
-		if($isUrl) {
+        $name = trim($name);
+        if (!strlen($name))
+            return 0;
+        $isUrl = in_array($type, array(self::TYPE_INTERNAL_URL));
+        if ($isUrl) {
             $name = self::normalizeUrl($name, $type == self::TYPE_INTERNAL_URL);
-	        if (!$name || self::excludeUrl($name))
-	            return 0;
-		}
+            if (!$name || self::excludeUrl($name))
+                return 0;
+        }
         $hash = $name;
 
         // Ищем страницу в действиях
