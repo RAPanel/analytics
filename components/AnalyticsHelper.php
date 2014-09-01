@@ -7,6 +7,10 @@ YiiBase::setPathOfAlias('analytics', dirname(dirname(__FILE__)));
  */
 class AnalyticsHelper
 {
+
+	const TYPE_INTERNAL_URL = 1;
+	const TYPE_EXTERNAL_URL = 2;
+	const TYPE_ACTION_NAME = 3;
     /**
      * @return CDbConnection
      */
@@ -35,15 +39,15 @@ class AnalyticsHelper
         $visitId = self::createCommand()->from('log_visit')
             ->select('id')
             ->where("BINARY visitor_id = :session", array('session' => $sessionIdEncoded))
-            ->andWhere('last_action_time > FROM_UNIXTIME(:time)', array('time' => $data['created'] - 60 * 30))
-            ->order('last_action_time DESC')
+            ->andWhere('lastmod > FROM_UNIXTIME(:time)', array('time' => $data['created'] - 60 * 30))
+            ->order('lastmod DESC')
             ->queryScalar();
 
         // Обновляем инфу визита или создаем новый
         if ($visitId) {
             self::createCommand()->update('log_visit', array(
-                'last_action_time' => new CDbExpression('FROM_UNIXTIME(:time)', array('time' => $data['created'])),
-                'total_time' => new CDbExpression(':time - UNIX_TIMESTAMP(`first_action_time`)', array('time' => $data['created'])),
+                'lastmod' => new CDbExpression('FROM_UNIXTIME(:time)', array('time' => $data['created'])),
+                'total_time' => new CDbExpression(':time - UNIX_TIMESTAMP(`created`)', array('time' => $data['created'])),
                 'total_actions' => new CDbExpression('`total_actions` + 1'),
             ), 'id=:visitId', compact('visitId'));
         } else {
@@ -54,8 +58,8 @@ class AnalyticsHelper
             self::getDb()->autoCommit = true;
             self::createCommand()->insert('log_visit', CMap::mergeArray($userAgentData, array(
                     'visitor_id' => $sessionIdEncoded,
-                    'last_action_time' => new CDbExpression('FROM_UNIXTIME(' . $data['created'] . ')'),
-                    'first_action_time' => new CDbExpression('FROM_UNIXTIME(' . $data['created'] . ')'),
+                    'lastmod' => new CDbExpression('FROM_UNIXTIME(' . $data['created'] . ')'),
+                    'created' => new CDbExpression('FROM_UNIXTIME(' . $data['created'] . ')'),
                     'location_ip' => self::p2n($data['ip']),
                     'total_time' => 0,
                     'total_actions' => 1,
@@ -67,14 +71,11 @@ class AnalyticsHelper
             self::getDb()->autoCommit = false;
         }
 
-        if (!$actionId = self::getActionId($data['url']))
-            return;
-
         self::getDb()->createCommand()->insert('log_hit', array(
             'visitor_id' => $sessionIdEncoded,
             'visit_id' => $visitId,
-            'action_id_name' => $actionId,
-            'action_id_url' => $actionId,
+            'action_id_name' => self::getActionId($data['name'], self::TYPE_ACTION_NAME),
+            'action_id_url' => self::getActionId($data['url']),
             'action_id_event' => 0,
             'time_cpu' => $data['time_cpu'],
             'time_exec' => $data['time_exec'],
@@ -134,24 +135,31 @@ class AnalyticsHelper
         return @inet_ntop($ipString);
     }
 
-    public static function getActionId($url, $type = 1)
+    public static function getActionId($name, $type = self::TYPE_INTERNAL_URL)
     {
-        $url = self::normalizeUrl($url, $type == 1);
-        if (!$url || self::excludeUrl($url))
-            return false;
-        $hash = $url;
+	    $name = trim($name);
+	    if(!strlen($name))
+		    return 0;
+	    $isUrl = in_array($type, array(self::TYPE_INTERNAL_URL));
+		if($isUrl) {
+            $name = self::normalizeUrl($name, $type == self::TYPE_INTERNAL_URL);
+	        if (!$name || self::excludeUrl($name))
+	            return 0;
+		}
+        $hash = $name;
 
         // Ищем страницу в действиях
         $id = self::createCommand()->from('log_action')
             ->select('id')
             ->where('hash = CRC32(:hash)', compact('hash'))
+            ->andWhere('type = :type', compact('type'))
             ->queryScalar();
 
         // Создаем новую при отсутствии
         if ($id === false) {
             self::getDb()->autoCommit = true;
             self::getDb()->createCommand()->insert('log_action', array(
-                'name' => $url,
+                'name' => $name,
                 'hash' => new CDbExpression('CRC32(:hash)', compact('hash')),
                 'type' => $type,
             ));

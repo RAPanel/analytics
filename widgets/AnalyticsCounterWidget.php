@@ -9,6 +9,9 @@ class AnalyticsCounterWidget extends CWidget {
 		$this->jsOptions['debug'] = YII_DEBUG;
 		$this->jsOptions['requestUrl'] = CHtml::normalizeUrl(array('/analytics/counter/index'));
 		$this->jsOptions['data'] = $this->sendingData;
+		$this->jsOptions['data']['id'] = AnalyticsComponent::$requestId;
+		if(Yii::app()->analytics->actionName)
+			$this->jsOptions['data']['name'] = Yii::app()->analytics->actionName;
 		$this->registerScripts();
 	}
 

@@ -7,28 +7,38 @@
 class CounterController extends RController
 {
 
-	public function actionIndex($u, $r)
+	public function actionIndex($id, $name = null)
 	{
 		if(!Yii::app()->request->isAjaxRequest)
 			throw new CHttpException(404);
-		$performance = Yii::app()->user->getState('performance');
+		$this->response(array('success' => true));
+		$data = Yii::app()->user->getState(md5('analytics:' . $id));
+		Yii::app()->user->setState(md5('analytics:' . $id), false);
 		AnalyticsHelper::incrementLog(array(
-			'url' => $u,
-			'referrer' => $r,
+			'url' => $data['url'],
+			'name' => $name,
+			'referrer' => $data['referrer'],
 			'userAgent' => Yii::app()->request->userAgent,
 			'ip' => Yii::app()->request->userHostAddress,
-			'session' => Yii::app()->session->id,
-			'time_cpu' => $performance['cpu_time'] * 1000,
-			'time_exec' => $performance['exec_time'] * 1000,
-			'ram' => $performance['ram'] * 1000,
+			'session' => Yii::app()->session->getSessionID(),
+			'time_cpu' => $data['cpu'] * 1000,
+			'time_exec' => $data['time'] * 1000,
+			'ram' => $data['ram'] * 1000,
 			'created' => time(),
 		));
-		$this->response(array('success' => true));
 	}
 
 	public function response($data)
 	{
+		ob_start();
 		echo json_encode($data);
+		$size = ob_get_length();
+		header("Content-Length: $size");
+		header('Connection: close');
+		ob_end_flush();
+		ob_flush();
+		if (session_id())
+			session_write_close();
 	}
 
 }

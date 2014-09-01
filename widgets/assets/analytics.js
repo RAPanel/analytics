@@ -1,25 +1,35 @@
 $(function () {
-	var options = {
+	$.fn.analytics = function (localOptions) {
+		var $this = $.fn.analytics;
+		var optionsData = $.extend($this.options.data, localOptions.data || {});
+		$this.options = $.extend($this.options, localOptions || {});
+		$this.options.data = optionsData;
+		$this.init();
+	};
+
+	$.fn.analytics.options = {
 		requestUrl: null,
 		debug: false,
-		data: {}
-	};
-	$.fn.analytics = function (localOptions) {
-		options = $.extend(options, localOptions || {});
-		$.fn.analytics.init();
+		data: {
+			id: null,
+			name: document.title
+		}
 	};
 
 	$.fn.analytics.init = function() {
-		if(options.debug)
+		var $this = this;
+		if($this.options.debug) {
 			console.log("Analytics request begin");
-		var url = $.fn.analytics.prepareUrl();
+			console.log($this.options.data);
+		}
 		$.ajax({
-			url: url,
+			url: $this.options.requestUrl,
 			method: 'GET',
+			data: $this.options.data,
 			dataType: 'json',
 			success: function(data) {
 				if(data.success == true) {
-					if(options.debug) {
+					if($this.options.debug) {
 						console.log("Analytics success request");
 					}
 				} else {
@@ -28,15 +38,11 @@ $(function () {
 				}
 			},
 			error: function(error) {
-				if(options.debug) {
+				if($this.options.debug) {
 					console.warn("Analytics request error");
-					console.log(options);
+					console.log($this.options);
 				}
 			}
 		});
-	};
-
-	$.fn.analytics.prepareUrl = function() {
-		
 	};
 });
