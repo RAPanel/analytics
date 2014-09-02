@@ -10,7 +10,7 @@ abstract class AnalyticsDataSource extends CComponent
 	{
 		$graphs = $this->getSeriesData($fromDate, $toDate, $zoom);
 		foreach ($graphs as $graphId => $graph) {
-			if(isset($graph['series'])) {
+			if (isset($graph['series'])) {
 				foreach ($graph['series'] as $serieId => $serie) {
 					$graphs[$graphId]['series'][$serieId] = CMap::mergeArray(array('name' => $this->getName($serieId), 'type' => $this->type), $graphs[$graphId]['series'][$serieId]);
 				}
@@ -82,9 +82,12 @@ abstract class AnalyticsDataSource extends CComponent
 			$toStr = date("Y-m-d H:i:s", time() + $this->getZoomTick($zoom));
 		$from = strtotime($fromStr);
 		$to = strtotime($toStr);
-		$zoomPattern = $this->getZoomPattern($zoom);
-		$fromStr = date($zoomPattern, $from);
-		$toStr = date($zoomPattern, $to);
+
+		// Если диапазон меньше максимальной детализации поля выбора - устанавливаем в 1 день
+		if ($to - $from < 24 * 3600)
+			$to = $from + $this->getZoomTick('day') - 1;
+		$fromStr = date($this->getZoomPattern($zoom), $from);
+		$toStr = date($this->getZoomPattern($zoom, true), $to);
 		return array($fromStr, $toStr);
 	}
 
@@ -107,13 +110,13 @@ abstract class AnalyticsDataSource extends CComponent
 	{
 		switch ($zoom) {
 			case 'minute':
-				return "Y-m-d H:i:s";
+				return $max ? "Y-m-d H:i:59" : "Y-m-d H:i:00";
 			case 'hour':
-				return $max ? "Y-m-d H:m:59" : "Y-m-d H:m:00";
-			case 'day':
 				return $max ? "Y-m-d H:59:59" : "Y-m-d H:00:00";
+			case 'day':
+				return $max ? "Y-m-d 23:59:59" : "Y-m-d 00:00:00";
 			case 'month':
-				return $max ? "Y-m-d 23:59:59" : "Y-m-d 0:00:00";
+				return $max ? "Y-m-31 23:59:59" : "Y-m-1 0:00:00";
 		}
 		return "Y-m-d H:i:s";
 	}

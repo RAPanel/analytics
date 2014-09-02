@@ -4,7 +4,7 @@ require_once(__DIR__ . '/AnalyticsDataSource.php');
 
 abstract class ViewsDataSource extends AnalyticsDataSource
 {
-	public $defaultZoom = 'month';
+	public $defaultZoom = 'day';
 
 	private static $_cache = array();
 

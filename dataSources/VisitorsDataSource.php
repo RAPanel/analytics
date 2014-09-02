@@ -15,7 +15,7 @@ class VisitorsDataSource extends ViewsDataSource {
 			),
 		);
 		foreach ($data as $row) {
-			$graphs['views']['series']['visitors']['data'][] = array(strtotime($row['date']) * 1000, (int)$row['visits']);
+			$graphs['views']['series']['visitors']['data'][] = array(strtotime($row['date']) * 1000, (int)$row['visitors']);
 		}
 		return $graphs;
 	}

@@ -5,7 +5,7 @@ require_once(__DIR__ . '/AnalyticsDataSource.php');
 abstract class PerformanceDataSource extends AnalyticsDataSource
 {
 
-	public $defaultZoom = 'month';
+	public $defaultZoom = 'minute';
 
 	private static $_cache = array();
 
