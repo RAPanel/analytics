@@ -75,8 +75,7 @@ class AnalyticsHelper
             $visitId = self::getDb()->getLastInsertID();
             self::getDb()->autoCommit = false;
         }
-
-        return self::getDb()->createCommand()->insert('log_hit', array(
+        self::getDb()->createCommand()->insert('log_hit', array(
             'visitor_id' => $sessionIdEncoded,
             'visit_id' => $visitId,
             'action_id_name' => self::getActionId($data['name'], self::TYPE_ACTION_NAME),
@@ -87,6 +86,7 @@ class AnalyticsHelper
             'ram' => $data['ram'],
             'created' => new CDbExpression('FROM_UNIXTIME(:time)', array('time' => $data['created'])),
         ));
+	    return true;
     }
 
     /**

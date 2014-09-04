@@ -30,15 +30,7 @@ class CounterController extends RController
 
 	public function response($data)
 	{
-		ob_start();
 		echo json_encode($data);
-		$size = ob_get_length();
-		header("Content-Length: $size");
-		header('Connection: close');
-		ob_end_flush();
-		ob_flush();
-		if (session_id())
-			session_write_close();
 	}
 
 }
