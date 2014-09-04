@@ -6,9 +6,10 @@ abstract class AnalyticsDataSource extends CComponent
 	public $defaultZoom = 'day';
 	public $type = 'spline';
 
-	public function getGraphData($fromDate, $toDate, $zoom)
+	public function getGraphData($fromDate, $toDate, &$zoom)
 	{
-		$graphs = $this->getSeriesData($fromDate, $toDate, $zoom);
+		$dates = $this->getDates($fromDate, $toDate, $zoom);
+		$graphs = $this->getSeriesData($dates, $zoom);
 		foreach ($graphs as $graphId => $graph) {
 			if (isset($graph['series'])) {
 				foreach ($graph['series'] as $serieId => $serie) {
@@ -65,9 +66,9 @@ abstract class AnalyticsDataSource extends CComponent
 		return $this->name;
 	}
 
-	abstract public function getSeriesData($fromDate, $toDate, $zoom);
+	abstract public function getSeriesData($dates, &$zoom);
 
-	public function getZoom($zoom)
+	public function getZoom(&$zoom)
 	{
 		if ($zoom === null)
 			return $this->defaultZoom;
@@ -76,10 +77,8 @@ abstract class AnalyticsDataSource extends CComponent
 
 	public function getDates($fromStr, $toStr, $zoom)
 	{
-		if ($fromStr === null)
-			$fromStr = date("Y-m-d H:i:s", time());
-		if ($toStr === null)
-			$toStr = date("Y-m-d H:i:s", time() + $this->getZoomTick($zoom));
+		if ($fromStr === null || $toStr === null)
+			return array(null, null);
 		$from = strtotime($fromStr);
 		$to = strtotime($toStr);
 
@@ -125,4 +124,5 @@ abstract class AnalyticsDataSource extends CComponent
 	{
 		return str_replace(array("Y-", "m-", "d ", "H:", "i:", "s"), array("%Y-", "%m-", "%d ", "%H:", "%i:", "%s"), $this->getZoomPattern($zoom));
 	}
+
 } 

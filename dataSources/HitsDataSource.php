@@ -5,9 +5,9 @@ require_once(__DIR__ . '/ViewsDataSource.php');
 class HitsDataSource extends ViewsDataSource
 {
 
-	public function getSeriesData($fromDate, $toDate, $zoom)
+	public function getSeriesData($dates, &$zoom)
 	{
-		$data = $this->getData($fromDate, $toDate, $zoom);
+		$data = $this->getData($dates, $zoom);
 		$graphs = array(
 			'views' => array(
 				'series' => array(

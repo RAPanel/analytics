@@ -4,9 +4,9 @@ require_once(__DIR__ . '/PerformanceDataSource.php');
 class RamDataSource extends PerformanceDataSource
 {
 
-	public function getSeriesData($fromDate, $toDate, $zoom)
+	public function getSeriesData($dates, &$zoom)
 	{
-		$data = $this->getData($fromDate, $toDate, $zoom);
+		$data = $this->getData($dates, $zoom);
 		$graphs = array(
 			'ram' => array(
 				'series' => array(

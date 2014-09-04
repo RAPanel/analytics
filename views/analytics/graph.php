@@ -1,4 +1,4 @@
-<div class="row date-range-picker">
+<div class="row date-range-picker" id="graphForm">
 	<?= CHtml::beginForm(array('/' . $this->module->id . '/analytics/graph', 'dataSources' => implode(',', $dataSources)), 'get'); ?>
 	<label for="dateRange">Выберите период: </label>
 	<?= CHtml::button('Today', array('onclick' => "$('#range').val('" . date('d.m.Y') . " - " . date('d.m.Y') . "');")) ?>
@@ -10,19 +10,21 @@
 		'name' => 'range',
 		'value' => $_GET['range'],
 	)); ?>
-	<?= CHtml::label("Detalization:", "zoomSelect") ?>
+	<?= CHtml::label("Детализация:", "zoomSelect") ?>
 	<?=
 	CHtml::dropDownList('zoom', $zoom, array(
-		'minute' => 'Minute',
-		'hour' => 'Hour',
-		'day' => 'Day',
-		'month' => 'Month',
+		'minute' => 'Минута',
+		'hour' => 'Час',
+		'day' => 'День',
+		'month' => 'Месяц',
 	)); ?>
+	<?= CHtml::hiddenField('graphZoom', $graphZoom); ?>
 	<?= CHtml::submitButton() ?>
 	<?= CHtml::endForm() ?>
 </div>
+<div id="graphs">
 <?php
-foreach ($graphData as $graph) {
+foreach ($graphData as $graphId => $graph) {
 	$type = $graph['series'][0]['type'];
 	$typeConfig = __DIR__ . '/graphs/' . $type . '.php';
 	if (!file_exists($typeConfig)) {
@@ -31,6 +33,7 @@ foreach ($graphData as $graph) {
 	}
 	$config = CMap::mergeArray(require($typeConfig), $graph);
 	$this->widget('ext.highcharts.HighstockWidget', array(
+		'id' => $graphId,
 		'options' => $config,
 		'setupOptions' => array(
 			'global' => array(
@@ -39,3 +42,5 @@ foreach ($graphData as $graph) {
 		)
 	));
 }
+?>
+</div>
