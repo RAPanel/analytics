@@ -10,7 +10,9 @@ return CMap::mergeArray(require(__DIR__ . '/main.php'), array(
 	),
 	'components' => array(
 		'loader' => array(
-			'onEnd' => 'AnalyticsComponent::onApplicationEnd',
+			'onEnd' => array(
+				'AnalyticsComponent::onApplicationEnd'
+			),
 		),
 	),
 ));
