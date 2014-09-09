@@ -14,7 +14,6 @@ class AnalyticsCommand extends RConsoleCommand
     {
         $startTime = time();
 
-
         $db = Yii::app()->db;
         if ($deleteAll) $db->createCommand()->delete('log_visit');
         $totalCount = $db->createCommand()->from('statistic')->select('COUNT(*)')->queryScalar();
@@ -22,7 +21,7 @@ class AnalyticsCommand extends RConsoleCommand
         $this->e("Convert data...");
         $i = 0;
         Yii::app()->db->autoCommit = false;
-        while ($part = $db->createCommand()->from('statistic')->order('lastmod')->limit(10000, $i)->queryAll()):
+        while ($part = $db->createCommand()->from('statistic')->order('lastmod')->limit(10000, $delete ? $i : 0)->queryAll()):
             foreach ($part as $row):
                 AnalyticsHelper::incrementLog(array(
                     'url' => $row['url'],
@@ -39,7 +38,7 @@ class AnalyticsCommand extends RConsoleCommand
 
                 $i++;
                 $this->cursorUp();
-                $this->e("{$i}/{$totalCount}     ");
+                $this->e("{$i}/{$totalCount}        ");
             endforeach;
             Yii::app()->db->autoCommit = true;
             $this->clear();
