@@ -21,7 +21,7 @@ class AnalyticsCommand extends RConsoleCommand
         $this->e("Convert data...");
         $i = 0;
         Yii::app()->db->autoCommit = false;
-        while ($part = $db->createCommand()->from('statistic')->order('lastmod')->limit(10000, $delete ? $i : 0)->queryAll()):
+        while ($part = $db->createCommand()->from('statistic')->order('lastmod')->limit(10000, $delete ? 0 : $i)->queryAll()):
             foreach ($part as $row):
                 AnalyticsHelper::incrementLog(array(
                     'url' => $row['url'],
