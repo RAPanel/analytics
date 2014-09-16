@@ -6,53 +6,67 @@ YiiBase::import('analytics.components.AnalyticsHelper');
 class AnalyticsComponent extends CApplicationComponent
 {
 
-    public $enabled = true;
+	public $enabled = true;
 
-    public static $requestId;
+	public static $requestId;
 
-    public $actionName = null;
+	public $actionName = null;
 
-    private static $_onStartCpuTime;
+	private static $_onStartCpuTime;
 
-    public function init()
-    {
-        if ($this->enabled) {
-            Yii::app()->getModule('rapanel')->controllerMap['analytics'] = array(
-                'class' => 'analytics.controllers.AnalyticsController',
-            );
-            self::$_onStartCpuTime = self::getCpuTime();
-            self::$requestId = uniqid();
-        }
-        parent::init();
-    }
+	public function init()
+	{
+		if ($this->enabled) {
+			$this->addController();
+			self::$_onStartCpuTime = self::getCpuTime();
+			self::$requestId = uniqid();
+		}
+		parent::init();
+	}
 
-    public static function onApplicationEnd()
-    {
-        if (Yii::app() instanceof CWebApplication && Yii::app()->getComponent('analytics')->enabled && !Yii::app()->request->isAjaxRequest) {
-            $logger = new CLogger;
-            $ramUsage = round($logger->getMemoryUsage() / 1048576, 2);
-            $executionTime = round($logger->getExecutionTime(), 3);
-            $cpuUsage = self::$_onStartCpuTime ? self::getCpuTime() - self::$_onStartCpuTime : 0;
-            $cpuTime = round($cpuUsage / 1000000, 3);
+	private function addController() {
+		$modules = Yii::app()->getModules();
+		if (isset($modules['rapanel'])) {
+			$controllerMap = isset($modules['rapanel']['controllerMap']) ? $modules['rapanel']['controllerMap'] : array();
+			Yii::app()->setModules(array(
+				'rapanel' => array(
+					'controllerMap' => CMap::mergeArray($controllerMap, array(
+							'analytics' => array(
+								'class' => 'analytics.controllers.AnalyticsController',
+							)
+						)),
+				)
+			));
+		}
+	}
 
-            Yii::trace("Memory used: " . $ramUsage . " MB");
-            Yii::trace("Execution time: " . $executionTime . " sec");
-            Yii::trace("CPU used: " . $cpuTime . " sec");
+	public static function onApplicationEnd()
+	{
+		if (Yii::app() instanceof CWebApplication && Yii::app()->getComponent('analytics')->enabled && !Yii::app()->request->isAjaxRequest) {
+			$logger = new CLogger;
+			$ramUsage = round($logger->getMemoryUsage() / 1048576, 2);
+			$executionTime = round($logger->getExecutionTime(), 3);
+			$cpuUsage = self::$_onStartCpuTime ? self::getCpuTime() - self::$_onStartCpuTime : 0;
+			$cpuTime = round($cpuUsage / 1000000, 3);
 
-            Yii::app()->cache->set('A:' . self::$requestId, array(
-                'ram' => $ramUsage,
-                'time' => $executionTime,
-                'cpu' => $cpuTime,
-                'url' => Yii::app()->request->hostInfo . Yii::app()->request->requestUri,
-                'referrer' => Yii::app()->request->urlReferrer,
-            ), 5 * 60);
-        }
-    }
+			Yii::trace("Memory used: " . $ramUsage . " MB");
+			Yii::trace("Execution time: " . $executionTime . " sec");
+			Yii::trace("CPU used: " . $cpuTime . " sec");
 
-    private static function getCpuTime()
-    {
-        $resourceUsage = getrusage();
-        return $resourceUsage["ru_utime.tv_sec"] * 1e6 + $resourceUsage["ru_utime.tv_usec"];
-    }
+			Yii::app()->cache->set('A:' . self::$requestId, array(
+				'ram' => $ramUsage,
+				'time' => $executionTime,
+				'cpu' => $cpuTime,
+				'url' => Yii::app()->request->hostInfo . Yii::app()->request->requestUri,
+				'referrer' => Yii::app()->request->urlReferrer,
+			), 5 * 60);
+		}
+	}
+
+	private static function getCpuTime()
+	{
+		$resourceUsage = getrusage();
+		return $resourceUsage["ru_utime.tv_sec"] * 1e6 + $resourceUsage["ru_utime.tv_usec"];
+	}
 
 } 
