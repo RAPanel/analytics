@@ -12,7 +12,8 @@ $(function () {
 		debug: false,
 		data: {
 			id: null,
-			name: document.title
+			name: document.title,
+			data: document.referrer
 		}
 	};
 
