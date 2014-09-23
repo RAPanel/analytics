@@ -13,7 +13,7 @@ $(function () {
 		data: {
 			id: null,
 			name: document.title,
-			data: document.referrer
+			referrer: document.referrer
 		}
 	};
 

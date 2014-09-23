@@ -6,11 +6,11 @@ YiiBase::import('analytics.components.AnalyticsHelper');
 class AnalyticsComponent extends CApplicationComponent
 {
 
+	public $cacheId = 'cacheFast';
+
 	public $enabled = true;
 
 	public static $requestId;
-
-	public $actionName = null;
 
 	private static $_onStartCpuTime;
 
@@ -24,25 +24,32 @@ class AnalyticsComponent extends CApplicationComponent
 		parent::init();
 	}
 
-	private function addController() {
+	private function addController()
+	{
 		$modules = Yii::app()->getModules();
 		if (isset($modules['rapanel'])) {
 			$controllerMap = isset($modules['rapanel']['controllerMap']) ? $modules['rapanel']['controllerMap'] : array();
 			Yii::app()->setModules(array(
 				'rapanel' => array(
 					'controllerMap' => CMap::mergeArray($controllerMap, array(
-							'analytics' => array(
-								'class' => 'analytics.controllers.AnalyticsController',
-							)
-						)),
+						'analytics' => array(
+							'class' => 'analytics.controllers.AnalyticsController',
+						)
+					)),
 				)
 			));
 		}
 	}
 
-	public static function onApplicationEnd()
+	public function reachGoal($goalName) {
+
+	}
+
+	public static function onApplicationEnd($event)
 	{
-		if (Yii::app() instanceof CWebApplication && Yii::app()->getComponent('analytics')->enabled && !Yii::app()->request->isAjaxRequest) {
+		$app = $event->sender;
+		$analytics = $app->getComponent('analytics');
+		if ($app instanceof CWebApplication && $analytics->enabled && !$app->request->isAjaxRequest) {
 			$logger = new CLogger;
 			$ramUsage = round($logger->getMemoryUsage() / 1048576, 2);
 			$executionTime = round($logger->getExecutionTime(), 3);
@@ -53,7 +60,7 @@ class AnalyticsComponent extends CApplicationComponent
 			Yii::trace("Execution time: " . $executionTime . " sec");
 			Yii::trace("CPU used: " . $cpuTime . " sec");
 
-			Yii::app()->cacheFast->set('A:' . self::$requestId, array(
+			Yii::app()->{$analytics->cacheId}->set('analytics:' . self::$requestId, array(
 				'ram' => $ramUsage,
 				'time' => $executionTime,
 				'cpu' => $cpuTime,
