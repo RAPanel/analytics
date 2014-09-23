@@ -7,15 +7,15 @@
 class CounterController extends RController
 {
 
-    public function actionIndex($id, $name = null)
+    public function actionIndex($id, $name = null, $referrer = null)
     {
         if (!Yii::app()->request->isAjaxRequest)
             throw new CHttpException(404);
-        $data = Yii::app()->cache->get('A:' . $id);
+        $data = Yii::app()->cacheFast->get('A:' . $id);
         $result = AnalyticsHelper::incrementLog(array(
-            'url' => $data['url'],
-            'name' => $name,
-            'referrer' => $data['referrer'],
+            'url' => $data['url'] ? $data['url'] : Yii::app()->request->requestUri,
+            'name' => $data['name'] ? $data['name'] : $name,
+            'referrer' => $data['referrer']?$data['referrer']:$referrer,
             'userAgent' => Yii::app()->request->userAgent,
             'ip' => Yii::app()->request->userHostAddress,
             'session' => Yii::app()->session->getSessionID(),

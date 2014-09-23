@@ -53,7 +53,7 @@ class AnalyticsComponent extends CApplicationComponent
 			Yii::trace("Execution time: " . $executionTime . " sec");
 			Yii::trace("CPU used: " . $cpuTime . " sec");
 
-			Yii::app()->cache->set('A:' . self::$requestId, array(
+			Yii::app()->cacheFast->set('A:' . self::$requestId, array(
 				'ram' => $ramUsage,
 				'time' => $executionTime,
 				'cpu' => $cpuTime,
