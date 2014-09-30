@@ -31,11 +31,18 @@ abstract class ViewsDataSource extends AnalyticsDataSource
 		return self::$_cache[$cacheString];
 	}
 
-	public function getYAxisData()
-	{
-		$data = parent::getYAxisData();
-		$data['title']['text'] = "Количество";
-		return $data;
+	public function getYAxisData() {
+		return array(
+			'views' => array(
+				'opposite' => true,
+				'labels' => array(
+					'format' => "{value}",
+				),
+				'title' => array(
+					'text' => 'Количество',
+				)
+			),
+		);
 	}
 
 	public function getName($seriesId)

@@ -9,20 +9,18 @@ abstract class AnalyticsDataSource extends CComponent
 	public function getGraphData($fromDate, $toDate, &$zoom)
 	{
 		$dates = $this->getDates($fromDate, $toDate, $zoom);
-		$graphs = $this->getSeriesData($dates, $zoom);
-		foreach ($graphs as $graphId => $graph) {
-			if (isset($graph['series'])) {
-				foreach ($graph['series'] as $serieId => $serie) {
-					$graphs[$graphId]['series'][$serieId] = CMap::mergeArray(array('name' => $this->getName($serieId), 'type' => $this->type), $graphs[$graphId]['series'][$serieId]);
-				}
-				$graphs[$graphId]['series'] = array_values($graphs[$graphId]['series']);
+		$graph = $this->getSeriesData($dates, $zoom);
+		if (isset($graph['series'])) {
+			foreach ($graph['series'] as $serieId => $serie) {
+				$graph['series'][$serieId] = CMap::mergeArray(array('name' => $this->getName($serieId), 'type' => $this->type), $graph['series'][$serieId]);
 			}
-			$graphs[$graphId] = CMap::mergeArray(array(
-				'xAxis' => $this->getXAxisData($zoom),
-				'yAxis' => $this->getYAxisData(),
-			), $graphs[$graphId]);
+			$graph['series'] = array_values($graph['series']);
 		}
-		return $graphs;
+		$graph = CMap::mergeArray(array(
+			'xAxis' => $this->getXAxisData($zoom),
+			'yAxis' => $this->getYAxisData(),
+		), $graph);
+		return $graph;
 	}
 
 	public function getXAxisData($zoom)

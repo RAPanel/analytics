@@ -7,23 +7,32 @@ class ExecTimeDataSource extends PerformanceDataSource
 	public function getSeriesData($dates, &$zoom)
 	{
 		$data = $this->getData($dates, $zoom);
-		$graphs = array(
-			'cpu' => array(
-				'series' => array(
-					'time' => array('type' => 'spline', 'data' => array()),
+		$graph = array(
+			'series' => array(
+				'time' => array(
+					'yAxis' => 'time',
+					'type' => 'spline',
+					'data' => array()
 				),
 			),
 		);
 		foreach ($data as $row) {
-			$graphs['cpu']['series']['time']['data'][] = array(strtotime($row['date']) * 1000, (int)$row['time'] / 1000);
+			$graph['series']['time']['data'][] = array(strtotime($row['date']) * 1000, (int)$row['time'] / 1000);
 		}
-		return $graphs;
+		return $graph;
 	}
 
-	public function getYAxisData()
-	{
-		$data = parent::getYAxisData();
-		$data['title']['text'] = "Время (с)";
-		return $data;
+	public function getYAxisData() {
+		return array(
+			'time' => array(
+				'opposite' => false,
+				'labels' => array(
+					'format' => "{value} с.",
+				),
+				'title' => array(
+					'text' => 'Время',
+				)
+			),
+		);
 	}
 } 

@@ -24,23 +24,21 @@
 </div>
 <div id="graphs">
 <?php
-foreach ($graphData as $graphId => $graph) {
-	$type = $graph['series'][0]['type'];
+	$type = $graphData['series'][0]['type'];
 	$typeConfig = __DIR__ . '/graphs/' . $type . '.php';
-	if (!file_exists($typeConfig)) {
+	if (file_exists($typeConfig)) {
+		$config = CMap::mergeArray(require($typeConfig), $graphData);
+		$this->widget('ext.highcharts.HighstockWidget', array(
+			'id' => $graphId,
+			'options' => $config,
+			'setupOptions' => array(
+				'global' => array(
+					'useUTC' => false,
+				),
+			)
+		));
+	} else {
 		echo "Config for {$type} doesn't exist";
-		break;
 	}
-	$config = CMap::mergeArray(require($typeConfig), $graph);
-	$this->widget('ext.highcharts.HighstockWidget', array(
-		'id' => $graphId,
-		'options' => $config,
-		'setupOptions' => array(
-			'global' => array(
-				'useUTC' => false,
-			),
-		)
-	));
-}
 ?>
 </div>

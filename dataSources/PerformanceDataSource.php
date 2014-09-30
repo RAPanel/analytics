@@ -15,7 +15,7 @@ abstract class PerformanceDataSource extends AnalyticsDataSource
 		if(!isset(self::$_cache[$cacheString])) {
 			$dateFormat = $this->getZoomMysqlPattern($zoom);
 			$command = Yii::app()->db->createCommand();
-			$command->select("MAX(ram) ram, AVG(time_cpu) cpu, AVG(time_exec) time, DATE_FORMAT(created, :dateFormat) date")
+			$command->select("MAX(ram) ram, AVG(ram) avgRam, AVG(time_cpu) cpu, AVG(time_exec) time, DATE_FORMAT(created, :dateFormat) date")
 				->from("log_hit")
 				->group("DATE_FORMAT(created, :dateFormat)");
 			$params = array(
@@ -31,12 +31,13 @@ abstract class PerformanceDataSource extends AnalyticsDataSource
 		return self::$_cache[$cacheString];
 	}
 
-
 	public function getName($seriesId)
 	{
 		switch ($seriesId) {
 			case 'ram':
 				return "Max Ram";
+			case 'avgRam':
+				return "Average Ram";
 			case 'cpu':
 				return "Average CPU";
 			case 'time':

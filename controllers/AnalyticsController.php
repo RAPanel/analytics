@@ -59,15 +59,27 @@ class AnalyticsController extends RAdminController {
 	}
 
 	public function getData($dataSources, $fromDate, $toDate, $zoom, $graphZoom) {
-		$graphsData = array();
+		$graphData = array();
 		foreach($dataSources as $dataSource) {
 			if($dataSource)
-				$graphsData = CMap::mergeArray($graphsData, $this->getGraphDataFromSource($dataSource, $fromDate, $toDate, $zoom, $graphZoom));
+				$graphData = CMap::mergeArray($graphData, $this->getGraphDataFromSource($dataSource, $fromDate, $toDate, $zoom, $graphZoom));
 		}
-		foreach($graphsData as $id => $graph) {
-			$graphsData[$id]['rangeSelector'] = $this->getGraphZoomConfig($zoom, $graphZoom);
+		$graphData['rangeSelector'] = $this->getGraphZoomConfig($zoom, $graphZoom);
+		$i = 0;
+		$axisMap = array();
+		foreach($graphData['yAxis'] as $axisId => $axis) {
+			if(!is_numeric($axisId)) {
+				$axisMap[$axisId] = $i;
+			}
+			$i++;
 		}
-		return $graphsData;
+		$graphData['yAxis'] = array_values($graphData['yAxis']);
+		foreach($graphData['series'] as $serieId => $serie) {
+			if(isset($serie['yAxis']) && isset($axisMap[$serie['yAxis']])) {
+				$graphData['series'][$serieId]['yAxis'] = $axisMap[$serie['yAxis']];
+			}
+		}
+		return $graphData;
 	}
 
 	public function getGraphDataFromSource($dataSource, $fromDate, $toDate, $zoom) {
@@ -80,6 +92,7 @@ class AnalyticsController extends RAdminController {
 				$source = new $className;
 				return $source->getGraphData($fromDate, $toDate, $zoom);
 			}
+			return array();
 		} else {
 			throw new CException("Data source '{$dataSource}' not found");
 		}
