@@ -7,10 +7,23 @@
 class CounterController extends RController
 {
 
+	public $domains = '*';
+
 	public function actionIndex($id, $name = null, $referrer = null)
 	{
 		if (!Yii::app()->request->isAjaxRequest)
 			throw new CHttpException(404);
+		if(is_string($this->domains)) {
+			$originAccess = $this->domains;
+		} elseif(is_array($this->domains)) {
+			$domains = array();
+			foreach($this->domains as $domain) {
+				$domains[] = "http://" . $domain;
+			}
+			$originAccess = implode(" ", $domains);
+		}
+		if(isset($originAccess))
+			header("Access-Control-Allow-Origin: {$originAccess}");
 		$data = Yii::app()->{Yii::app()->analytics->cacheId}->get('analytics:' . $id);
 		$result = AnalyticsHelper::incrementLog(array(
 			'url' => Yii::app()->request->urlReferrer,
