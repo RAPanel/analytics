@@ -11,8 +11,7 @@ class CounterController extends RController
 
 	public function actionIndex($id, $name = null, $referrer = null)
 	{
-		if (!Yii::app()->request->isAjaxRequest)
-			throw new CHttpException(404);
+		// Не проверять ajax - кроссдоменные запросы не отсылают нужный заголовок
 		if(is_string($this->domains)) {
 			$originAccess = $this->domains;
 		} elseif(is_array($this->domains)) {
